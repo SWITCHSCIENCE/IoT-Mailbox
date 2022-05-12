@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include <LoRaWan-Arduino.h>
 
-const int PIN_LED = 13;  // LED
+#define RX_PIN 2
+#define TX_PIN 31
 
 RadioEvents_t DefaultConf();
 void SetupLoRa(uint8_t ch, RadioEvents_t *conf);
@@ -24,7 +25,7 @@ void onRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
 
 void setup() {
   static RadioEvents_t conf;
-  pinMode(PIN_LED, OUTPUT);
+  Serial.setPins(RX_PIN, TX_PIN);
   Serial.begin(115200);
   Serial.println("boot!");
   // Initialize LoRa
