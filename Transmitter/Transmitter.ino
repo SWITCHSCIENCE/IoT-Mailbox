@@ -1,5 +1,6 @@
 #include <Arduino.h>
-#include <LoRaWan-Arduino.h>
+
+#include "lora_handler.h"
 
 #define TRIGGER 12
 #define POWERSAVE
@@ -117,14 +118,44 @@ void powerOff() {
   NRF_POWER->SYSTEMOFF = 1;  // sd_power_system_off();
 }
 
+bool ack;
+bool transSuccess;
+bool transEnd;
+
+void onRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
+  if (size == 1 && payload[0] == 0x06) {
+    ack = true;
+  }
+}
+
+void transaction() {
+  for (int i = 0; i < 3; i++) {
+    transEnd = false;
+    transmit();
+    while (!transEnd) delay(1000);
+    if (transSuccess) {
+      ack = false;
+      StartRx();
+      delay(3000);
+      if (ack) {
+        Logln("send completed");
+        break;
+      }
+    }
+  }
+  powerOff();
+}
+
 static void onTxDone(void) {
   Logf("Transmit finished: %d ms\n", millis());
-  powerOff();
+  transSuccess = true;
+  transEnd = true;
 }
 
 static void onTxTimeout(void) {
   Logf("Transmit timeout: %d ms\n", millis());
-  powerOff();
+  transSuccess = false;
+  transEnd = true;
 }
 
 void setup(void) {
@@ -139,15 +170,20 @@ void setup(void) {
 
   // Initialize LoRa
   conf = DefaultConf();
+  conf.RxDone = onRxDone;
   conf.TxDone = onTxDone;
   conf.TxTimeout = onTxTimeout;
   SetupLoRa(0, &conf);
   SetupTx();
+  SetupRx();
 
   Logln("LoRa init success");
 
   Logln("transmit...");
-  transmit();
+  transaction();
 }
 
-void loop(void) { delay(1000); }
+void loop(void) {
+  LoRaIrqProc();
+  delay(100);
+}

@@ -1,14 +1,9 @@
 #include <Arduino.h>
-#include <LoRaWan-Arduino.h>
 
-#define RX_PIN 2
-#define TX_PIN 31
+#include "lora_handler.h"
 
-RadioEvents_t DefaultConf();
-void SetupLoRa(uint8_t ch, RadioEvents_t *conf);
-void SetupRx();
-void LoRaIrqProc();
 void BoardGetUniqueId(uint8_t *id);
+uint8_t ACK = 0x06;
 
 void onRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
   if (size == 11) {
@@ -20,24 +15,27 @@ void onRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr) {
     uint16_t v = *(uint16_t *)(&payload[8]);
     Serial.printf("battery=%4.2f\t", float(v) / 100.0);
     Serial.printf("state=%d\n", payload[10]);
+    SendLoRa(&ACK, 1);  // reply ack
   }
 }
 
 void setup() {
   static RadioEvents_t conf;
-  Serial.setPins(RX_PIN, TX_PIN);
+  Serial.setPins(2, 31);
   Serial.begin(115200);
   Serial.println("boot!");
   // Initialize LoRa
   conf = DefaultConf();
   conf.RxDone = onRxDone;
   SetupLoRa(0, &conf);
+  SetupTx();
   SetupRx();
   uint8_t deviceId[8];
   BoardGetUniqueId(deviceId);
   Serial.print("SerialNumber: ");
   Serial.printBuffer(deviceId, 8);
   Serial.println();
+  StartRx();
 }
 
 void loop() { LoRaIrqProc(); }

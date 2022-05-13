@@ -1,5 +1,6 @@
+#include "lora_handler.h"
+
 #include <Arduino.h>
-#include <LoRaWan-Arduino.h>
 #include <SPI.h>
 
 // LoRa Parameters
@@ -49,10 +50,10 @@ static void startCad() {
 }
 
 // Event declarations
-static void onTxDone(void) {}
+static void onTxDone(void) { Radio.Rx(RX_TIMEOUT_VALUE); }
 static void onRxDone(uint8_t *payload, uint16_t size, int16_t rssi,
                      int8_t snr) {}
-static void onTxTimeout(void) {}
+static void onTxTimeout(void) { Radio.Rx(RX_TIMEOUT_VALUE); }
 static void onRxTimeout(void) {}
 static void onRxError(void) {}
 static void onCadDone(bool cadResult) {
@@ -73,6 +74,8 @@ static void onCadDone(bool cadResult) {
     }
   }
 }
+
+void StartRx() { Radio.Rx(RX_TIMEOUT_VALUE); }
 
 RadioEvents_t DefaultConf() {
   static RadioEvents_t RadioEvents;
@@ -105,7 +108,6 @@ void SetupRx() {
                     LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
                     LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON, 0, true, 0,
                     0, LORA_IQ_INVERSION_ON, true);
-  Radio.Rx(RX_TIMEOUT_VALUE);
 }
 
 void LoRaIrqProc() { Radio.IrqProcess(); }
