@@ -8,5 +8,5 @@ RUN apk add make python3 py3-pip gcc-arm-none-eabi newlib-arm-none-eabi
 WORKDIR /root/Adafruit_nRF52_Bootloader
 ADD customboard ./src/boards/customboard
 RUN python3 -m pip install adafruit-nrfutil intelhex
-RUN sed -i 's|1000|5000|g' src/main.c
+#RUN sed -i 's|1000|5000|g' src/main.c
 CMD ["make", "BOARD=customboard"]
