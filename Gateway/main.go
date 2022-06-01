@@ -18,16 +18,16 @@ import (
 )
 
 type Config struct {
-	Port        string        `env:"RECEIVER_PORT" envDefault:"/dev/ttyS0"`
-	ID          string        `env:"TRANSMITTER_ID, required"`
-	Token       string        `env:"LINE_NOTIFY_TOKEN, required"`
+	Port        string        `env:"RECEIVER_PORT,notEmpty" envDefault:"/dev/ttyS0"`
+	ID          string        `env:"TRANSMITTER_ID,notEmpty"`
+	Token       string        `env:"LINE_NOTIFY_TOKEN,notEmpty"`
 	OnMessage   string        `env:"ON_MESSAGE" envDefault:"何か届きました"`
 	OffMessage  string        `env:"OFF_MESSAGE" envDefault:"何か届きました"`
 	WaitTime    time.Duration `env:"WAIT_TIME" envDefault:"10s"`
 	BatteryWarn float64       `env:"BATTERY_WARN" envDefault:"2.2"`
 }
 
-var cfg = &Config{}
+var cfg = Config{}
 
 func init() {
 	if err := env.Parse(&cfg); err != nil {
