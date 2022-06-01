@@ -1,0 +1,9 @@
+[Unit]
+Description=IoT-Mailbox Gateway
+
+[Service]
+EnvironmentFile=/home/pi/Gateway.env
+ExecStart=/home/pi/Gateway
+
+[Install]
+WantedBy=multi-user.target
